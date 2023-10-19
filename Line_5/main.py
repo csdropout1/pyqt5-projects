@@ -211,19 +211,6 @@ class Line5(QWidget):
 
     def paintEvent(self, event):
         painter = QPainter(self)
-        for row in range(self.rows):
-            for col in range(self.columns):
-                cell_color = QColor(255, 255, 255)  # Default cell color (white)
-                if self.board[row][col] == 1:
-                    cell_color = QColor(255, 0, 0)  # Red
-                elif self.board[row][col] == 2:
-                    cell_color = QColor(0, 0, 255)  # Blue
-
-                painter.setBrush(cell_color)
-                painter.drawEllipse(col * self.cell_size, (row + 1) * self.cell_size, self.cell_size, self.cell_size)
-
-    def paintEvent(self, event):
-        painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)  # Enable antialiasing for smoother edges
 
         for row in range(self.rows):
