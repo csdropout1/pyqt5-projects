@@ -3,9 +3,25 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QPu
 from PyQt5.QtGui import QPainter, QColor, QPixmap, QFont
 from PyQt5.QtCore import Qt, QSize
 import numpy as np
-import pandas as pd
 
+r_spacing = 10
+c_spacing = 5
 magic = 9
+ico = 250
+jokes = [
+"Why do Minesweeper players make great detectives? Because they can spot a mine from a mile away!",
+"I tried to impress my crush with my Minesweeper skills, but it turns out they were more into 'mines' than 'sweeping'!",
+"ARE YOU ENJOYING CHAT GPT's JOKES?",
+"Why did the Minesweeper player break up with their partner? Because they were tired of sweeping things under the rug!",
+"What do you call a successful Minesweeper player? A real 'mine'field expert!",
+"Minesweeper taught me one thing: Always check your surroundings for 'explosive' surprises!",
+"My friend asked me to explain Minesweeper, so I just 'cleared the air' for them!",
+"Why was the Minesweeper player always the life of the party? Because they knew how to 'defuse' any situation!",
+"Minesweeper is like life: Sometimes you're just one wrong move away from disaster!",
+"Minesweeper is a game of strategy, patience, and the occasional explosive surprise.",
+"The key to winning Minesweeper is to approach it like life – one step at a time and always prepared for the unexpected!"
+]
+
 def create_random_grid(m, n, s):
     grid = np.zeros((m, n), dtype=int)  # Create an m x n grid of zeros
     if s > m * n:
@@ -30,6 +46,47 @@ def create_random_grid(m, n, s):
 
 class minesweeper(QWidget):
 
+    def dig(self, x, y):             
+        if self.grid[y][x] > 8:
+            self.boom()
+            self.banter.setText('Awww try again!')
+            self.banter.setStyleSheet(
+                f"""
+                background-color: rgba(0, 0, 0, 0);
+                color: {'pink'}; 
+                """
+                ) 
+        else:
+            self.board[y][x] = 1
+            self.update()
+            self.count += 1
+            # print(self.count, int(self.w*(self.index/10)))
+            if self.count == int(self.w*(self.index/10)):
+                self.banter.setText(jokes[self.index])
+                self.banter.setStyleSheet(
+                f"""
+                background-color: rgba(0, 0, 0, 0);
+                color: {'pink'}; 
+                """
+                ) 
+                self.index += 1
+            if self.count == self.w:
+                self.win()
+        return 0
+    
+    def win(self):
+        self.banter.setText('YOU WIN!')
+        self.banter.setStyleSheet(
+            f"""
+            background-color: rgba(0, 0, 0, 0);
+            color: {'pink'}; 
+            """
+        ) 
+    def boom(self):
+        self.board = [[1] * (self.columns) for _ in range(self.rows)]
+        self.update()
+        return 0
+    
     def create_button(self, name, movex, movey, rex, rey, fonttype, fontsize, func):
         b = QPushButton(name, self)
         b.move(movex, movey)
@@ -50,15 +107,24 @@ class minesweeper(QWidget):
         # Define the board size
         self.rows = 16
         self.columns = 30
-        self.cell_size = 20
+        self.cell_size = 30
         self.bombs = 100
+        self.w = (self.rows*self.columns)-100
+        self.count = 0
         self.grid = create_random_grid(self.rows, self.columns, self.bombs)
+        self.index = 1
 
-        # gridi = pd.DataFrame(self.grid)
-        # print(gridi)
+        self.icon = QLabel(self)
+        self.cat = QPixmap('./cat.png')
+        self.cat = self.cat.scaled(ico, ico)
+        self.icon.setPixmap(self.cat)
+        self.icon.move(800, 0)
 
+        self.xbomb = QPixmap('./x.png')
+        self.xbomb = self.xbomb.scaled(self.cell_size, self.cell_size)
+        self.l_flag = 0
         # Initialize the game board
-        self.board = [[0] * (self.columns+1) for _ in range(self.rows)]
+        self.board = [[0] * (self.columns) for _ in range(self.rows)]
         self.setWindowTitle("Minesweeper")
         self.setStyleSheet(
             """
@@ -66,8 +132,8 @@ class minesweeper(QWidget):
             """
         )
         self.setMinimumSize(QSize(1400, 900))  
-        self.reset = self.create_button("Reset the Game!", 850,200,550,100,'System',60,self.reset_game)
-        self.banter = self.create_label("Make a Line of 5!", 1000,400,550,100,'System',32)
+        self.reset = self.create_button("Reset the Game!", 100,100,550,100,'System',60,self.reset_game)
+        self.banter = self.create_label("Don't Go BOOM!!", 180,200,1000,100,'System',20)
         self.reset.setStyleSheet(
             """
             background-color: rgba(0, 0, 0, 0);
@@ -84,23 +150,42 @@ class minesweeper(QWidget):
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)  # Enable antialiasing for smoother edges
+        size =  self.cell_size*0.7
+        font = QFont('System', int(size))
+        painter.setFont(font)
 
         for row in range(self.rows):
             for col in range(self.columns):
-                col += 1
-                cell_color = QColor(255, 255, 255)  # Default cell color (white)
-                if self.board[row][col] == 1:
-                    cell_color = QColor(255, 0, 0)  # Red
-                elif self.board[row][col] == 2:
-                    cell_color = QColor(0, 0, 255)  # Blue
                 
                 painter.setBrush(QColor(255, 255, 255)) 
-                painter.drawRect(col * self.cell_size, (row + 1) * self.cell_size, self.cell_size, self.cell_size)
+                cell_x = (col + c_spacing) * self.cell_size
+                cell_y = (row + r_spacing) * self.cell_size
+                painter.drawRect(cell_x, cell_y, self.cell_size, self.cell_size)
 
-                painter.setBrush(cell_color)
-                painter.drawEllipse(col * self.cell_size, (row + 1) * self.cell_size, self.cell_size, self.cell_size)
+                # painter.setBrush(cell_color)
+                # painter.drawEllipse((col+c_spacing) * self.cell_size, (row + r_spacing) * self.cell_size, self.cell_size, self.cell_size)
+                if self.board[row][col] == 1:
+                    if self.grid[row][col] > 8:
+                        painter.drawImage(cell_x, cell_y, self.xbomb.toImage())
+                    else:
+                        c = self.grid[row][col]
+                        painter.setPen(QColor(255*(c%2), 75*(c%3), 50*(c%4)))
+                        painter.drawText(cell_x, cell_y-(int)(self.cell_size*0.2)+self.cell_size, '  '+str(self.grid[row][col]))
+                        painter.setPen(QColor(0,0,0))
 
     def reset_game(self):
+        self.banter.setText('DONT GO BOOM!!')
+        self.banter.setStyleSheet(
+            f"""
+            background-color: rgba(0, 0, 0, 0);
+            color: {'white'}; 
+            """
+        ) 
+        self.index = 1
+        self.grid = create_random_grid(self.rows, self.columns, self.bombs)
+        self.count = 0
+        self.board = [[0] * (self.columns) for _ in range(self.rows)]
+        self.update()
         return 0 
 
     def mousePressEvent(self, event):
@@ -108,21 +193,12 @@ class minesweeper(QWidget):
             x = event.pos().x()
             y = event.pos().y()
             # Check which circle was clicked
-            for col in range(self.columns):
-                col += 1
-                s_x = col * self.cell_size
-                s_y = self.cell_size  # Offset for the row
-                if x > s_x and x < s_x + self.cell_size and y > s_y and y < s_y*(self.rows+1):
-                    # Calculate the row where the piece will be placed
-                    for row in range(self.rows - 1, -1, -1):
-                        if self.board[row][col] == 0:
-                            # Place a piece (1 for red) and update the board
-                            self.board[row][col] = self.whos_turn
-                            self.update()
-                            self.add_score(self.whos_turn, row, col)
-                            self.update_turn()
-                            self.start = 0
-                            break
+            s_x = (c_spacing) * self.cell_size
+            s_y = self.cell_size*r_spacing
+            if x > s_x and x < s_x + self.cell_size*self.columns and y > s_y and y < s_y+ self.cell_size*self.rows:
+                xx = int((x-s_x)/self.cell_size)
+                yy = int((y-s_y)/self.cell_size)
+                self.dig(xx, yy)
 
 
 if __name__ == '__main__':
