@@ -1,0 +1,7 @@
+pip install pyqt5
+pip install numpy
+
+**If you want to make this into an application**
+
+pip install pyinstaller
+(If you are using conda as your file manager, you will have to delete pathlib from your files manually since it is obsolete)
