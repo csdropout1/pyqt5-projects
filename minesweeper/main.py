@@ -109,7 +109,7 @@ class minesweeper(QWidget):
         self.columns = 30
         self.cell_size = 30
         self.bombs = 100
-        self.w = (self.rows*self.columns)-100
+        self.w = (self.rows*self.columns)-self.bombs
         self.count = 0
         self.grid = create_random_grid(self.rows, self.columns, self.bombs)
         self.index = 1
@@ -160,6 +160,7 @@ class minesweeper(QWidget):
                 painter.setBrush(QColor(255, 255, 255)) 
                 cell_x = (col + c_spacing) * self.cell_size
                 cell_y = (row + r_spacing) * self.cell_size
+                painter.setPen(QColor(0, 0, 0)) 
                 painter.drawRect(cell_x, cell_y, self.cell_size, self.cell_size)
 
                 # painter.setBrush(cell_color)
